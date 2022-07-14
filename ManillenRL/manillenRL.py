@@ -3,16 +3,16 @@ from ManillenAgents import *
 
 
 
-learningIterations = 2000000
+learningIterations = 0
 
 evaluationIterations = 20000
 
-p1 = LearningAgent()
-p3 = LearningAgent()
-team2 = SmartAgentV2()
+p1 = SmartAgentV2()
+p3 = SmartAgentV2()
+p2 = SmartAgentV2()
+p4 = SmartAgentV2()
 
-players1 = [p1,team2,p3,team2]
-players2 = [team2,p1,team2,p3]
+players1 = [p1,p2,p3,p4]
 
 
 
@@ -23,10 +23,7 @@ for i in range(learningIterations):
 
     for s in range(2):
 
-        if s == 0:
-            players = players1
-        else:
-            players = players2
+        players = np.roll(players1,s)
         me.reset(i)
         me.setTroef(troef)    
         done = False
@@ -56,10 +53,7 @@ for i in range(evaluationIterations):
 
     for s in range(2):
 
-        if s == 0:
-            players = players1
-        else:
-            players = players2
+        players = np.roll(players1,s)
         me.reset(i)
         me.setTroef(troef)    
         done = False
