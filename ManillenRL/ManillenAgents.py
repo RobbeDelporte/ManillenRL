@@ -41,6 +41,12 @@ class Agent:
     def giveReward(self,reward):
         pass
 
+    def saveModel(self,file):
+        pass
+
+    def loadModel(self,file):
+        pass
+
 class RandomAgent(Agent):
     def getMove(self,moves,state):
         return random.choice(moves)
@@ -55,7 +61,7 @@ class LastMoveAgent(Agent):
         return moves[-1]
     
 
-class HighestValueAgent(Agent):
+class FirstValueAgent(Agent):
     def getMove(self,moves,state):
         return max(moves,key=lambda x: x["value"])
 
@@ -136,3 +142,10 @@ class LearningAgent(Agent):
         self.state = None
         self.nextState = None
         self.action = None 
+
+    def saveModel(self,file):
+        np.save(file,self.Qtable)
+
+    def loadModel(self,file):
+        print("loading model from " + file)
+        self.Qtable = np.load(file)

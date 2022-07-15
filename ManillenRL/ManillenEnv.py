@@ -65,6 +65,9 @@ class manillenEnviroment:
 
     def setTroef(self,troef):
         self.troef = troef
+
+    def setFirstPlayer(self,player):
+        self.playerTurn  = player
     
     def step(self,card):
         if DEBUG:
