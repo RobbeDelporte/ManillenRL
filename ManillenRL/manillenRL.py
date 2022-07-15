@@ -49,7 +49,7 @@ for i in range(learningIterations):
 for i,player in enumerate(players1):
     player.saveModel(f"player{i}.npy")
 
-print("LEARNING DONE")
+print("LEARNING DONE!")
 
 team1CumulativePoints = 0
 team2CumulativePoints = 0
