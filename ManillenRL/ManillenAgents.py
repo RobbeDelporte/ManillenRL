@@ -122,7 +122,7 @@ class LearningAgent(Agent):
         self.action = bestAction
         return bestAction
 
-    def setNextState(self,state):
+    def addNextState(self,state):
         self.nextState = state
     
     def giveReward(self, reward):
@@ -144,8 +144,26 @@ class SimpleLearningAgent(Agent):
     state = None
     action = None
     nextStates = None
-    alpha = 0.5
-    gamma = 0.8
+    alpha = 1.0
+    gamma = 0.0
+
+    # def __init__(self) -> None:
+    #     for troef in range(4):
+    #         for cardsOnTable in range(4):
+    #             for teamWinning in range(2):
+    #                 for card in range(32):
+    #                     cardValue = card%8
+    #                     cardSuit = card//8
+    #                     if cardsOnTable == 0:
+    #                         if cardValue == 7:
+    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 8
+    #                         else:
+    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 7 - cardValue
+    #                     else:
+    #                         if teamWinning:
+    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 8*(cardSuit != troef) + cardValue
+    #                         else:
+    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 7 - cardValue
 
 
     def getQActions(self,state):
@@ -172,7 +190,6 @@ class SimpleLearningAgent(Agent):
         self.nextState = state
     
     def giveReward(self, reward):
-
         linAction = self.linAction(self.action)
         self.getQActions(self.state)[linAction] = (1-self.alpha)*self.getQActions(self.state)[linAction] + self.alpha*(reward + self.gamma*np.max(self.getQActions(self.nextState)))
         self.state = None

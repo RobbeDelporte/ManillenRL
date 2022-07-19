@@ -20,14 +20,6 @@ class manillenEnviroment:
 
    
     def reset(self,seed,shift):
-        """resets the enviroment. takes a seed and a shift that can be used to ensure fair games, without having to rely on big numbers
-
-        Args:
-            seed (Number): The seed used to shuffle the deck
-            
-            shift (Int): the Shift determining the first player and which portion of the deck gets assigned to which player. eg: when shift = 1 the player n.1 will
-            get the first turn and the same cards that player n.0 would have gotten when shift = 0
-        """
         self.team1points = 0
         self.team2points = 0
         self.tableCards = [None,None,None,None]
@@ -55,7 +47,7 @@ class manillenEnviroment:
                     rank = value + 7
                 self.allCards.append({"suit": suit, "value": value, "rank": rank,"owner":-1})
 
-        random.seed()
+        random.seed(seed)
         random.shuffle(self.allCards)
 
         for i,card in enumerate(self.allCards):
@@ -71,16 +63,6 @@ class manillenEnviroment:
         self.troef = troef
     
     def step(self,card):
-        """The step function of the enviroment. Imprtant to note the only player allowed to make a move is the current player AND the only allowed moves are legal ones.
-        This is not verified in the step function for performance reasons.
-
-        Args:
-            card (Card): The card/move of the current player
-
-        Returns:
-            (bool,int,int): Done, SetScore, WinningPlayer
-        """
-
         if self.cardsOnTable == 0:
             self.firstCard = card
             self.winningCard = card
@@ -114,14 +96,6 @@ class manillenEnviroment:
             return False, setScore, self.winningCard["owner"]
 
     def getLegalMoves(self,cards):
-        """gets the legal moves/card of a set of moves/cards implementing the game rules
-
-        Args:
-            cards (List<Card>): The set of cards/moves of which to cacultate the legal moves
-
-        Returns:
-            List<Card>: A subset of the cards arg determining the legal moves/cards
-        """
         if self.cardsOnTable == 0:
             return cards
             
@@ -160,14 +134,6 @@ class manillenEnviroment:
             return cards
         
     def cardWins(self,card):
-        """Checks wheter or not a card would win the current board
-
-        Args:
-            card (Card): A card
-
-        Returns:
-            Bool: True if the card would win the board false otherwise
-        """
         cardTroef = card["suit"] == self.troef
         winningCardTroef = self.winningCard["suit"] == self.troef
         rankHigher = card["value"] > self.winningCard["value"]
@@ -188,19 +154,9 @@ class manillenEnviroment:
 
     
     def getLegalActions(self,player):
-        """Handy wrapper function for the getLegalMovesfunction
-        """
         return self.getLegalMoves(self.playerCards[player])
 
     def getObservationState(self,player):
-        """Returns the state that a player has access to, the observable state. As well as some features
-
-        Args:
-            player (Int): The player in question
-
-        Returns:
-            State: The state that the player can see
-        """
         state = {}
 
         state["tableCards"] = self.tableCards
@@ -242,11 +198,6 @@ class manillenEnviroment:
 
 
     def getScores(self):
-        """The rewards of the current set. This function should only be called at the end of a game
-
-        Returns:
-            _type_: _description_
-        """
         if not self.done:
             return -1,-1
         else:
