@@ -1,9 +1,5 @@
-from matplotlib.pyplot import table
 import numpy as np
 import random
-
-
-DEBUG = False
 
 class manillenEnviroment:
 
@@ -18,13 +14,18 @@ class manillenEnviroment:
     setNumber = 0
     cardsOnTable = 0
     winningCard = None
-    winningPlayer = 0
     firstCard = None
     troef = 0
     done = False
 
-
-    def reset(self,seed):
+   
+    def reset(self,seed,shift):
+        """resets the enviroment. takes a seed and a shift that can be used to ensure fair games, without having to rely on big numbers
+        Args:
+            seed (Number): The seed used to shuffle the deck
+            shift (Int): the Shift determining the first player and which portion of the deck gets assigned to which player. eg: when shift = 1 the player n.1 will
+            get the first turn and the same cards that player n.0 would have gotten when shift = 0
+        """
         self.team1points = 0
         self.team2points = 0
         self.tableCards = [None,None,None,None]
@@ -33,7 +34,6 @@ class manillenEnviroment:
         self.setNumber = 0
         self.cardsOnTable = 0
         self.winningCard = None
-        self.winningPlayer = 0
         self.firstCard = None
         self.troef = 0
         self.done = False
@@ -52,27 +52,28 @@ class manillenEnviroment:
                 else:
                     rank = value + 7
                 self.allCards.append({"suit": suit, "value": value, "rank": rank,"owner":-1})
-        
-        random.seed()
+
+        random.seed(seed)
         random.shuffle(self.allCards)
 
         for i,card in enumerate(self.allCards):
-            card["owner"] = i%4
-            self.playerCards[i%4].append(card)
+            card["owner"] = (i+shift)%4
+            self.playerCards[(i+shift)%4].append(card)
+
+        self.playerTurn = shift%4
 
         for player in range(4):
             self.playerCards[player] = sorted(self.playerCards[player],key=lambda x: 13*x["suit"]+x["value"])
 
     def setTroef(self,troef):
-        self.troef = troef
+        """sets the troef of the game. can be used in the future to include troef chosing algorithms.
 
-    def setFirstPlayer(self,player):
-        self.playerTurn  = player
+        Args:
+            troef (Int): 0,1,2 or 3 representing SPADES, DIAMONDS, CLUBS or HEARTS
+        """
+        self.troef = troef
     
-    def step(self,card):
-        if DEBUG:
-            print(f'\nPlayer{card["owner"]} makes move {card}')
-        
+    def step(self,card):        
         if self.cardsOnTable == 0:
             self.firstCard = card
             self.winningCard = card
@@ -94,7 +95,7 @@ class manillenEnviroment:
                     setScore = setScore + (tableCard["value"] - 2)
             self.cardsOnTable = 0
             self.tableCards = [None,None,None,None]
-            self.playerTurn = self.winningPlayer
+            self.playerTurn = self.winningCard["owner"]
             self.setNumber += 1
             if self.winningCard["owner"] == 0 or self.winningCard["owner"] == 2:
                 self.team1points += setScore
@@ -106,6 +107,14 @@ class manillenEnviroment:
             return False, setScore, self.winningCard["owner"]
 
     def getLegalMoves(self,cards):
+        """gets the legal moves/card of a set of moves/cards implementing the game rules
+
+        Args:
+            cards (List<Card>): The set of cards/moves of which to cacultate the legal moves
+
+        Returns:
+            List<Card>: A subset of the cards arg determining the legal moves/cards
+        """
         if self.cardsOnTable == 0:
             return cards
             
@@ -144,6 +153,14 @@ class manillenEnviroment:
             return cards
         
     def cardWins(self,card):
+        """Checks wheter or not a card would win the current board
+
+        Args:
+            card (Card): A card
+
+        Returns:
+            Bool: True if the card would win the board false otherwise
+        """
         cardTroef = card["suit"] == self.troef
         winningCardTroef = self.winningCard["suit"] == self.troef
         rankHigher = card["value"] > self.winningCard["value"]
@@ -163,10 +180,21 @@ class manillenEnviroment:
         return False
 
     
-    def getLegalActionsOfCurrentPlayer(self):
-        return self.getLegalMoves(self.playerCards[self.playerTurn])
+    def getLegalActions(self,player):
+        """Handy wrapper function for the getLegalMovesfunction
+        """
+        return self.getLegalMoves(self.playerCards[player])
 
     def getObservationState(self,player):
+        """Gives the state that a player has access to, the observable state.
+        Impotant to note: This is NOT the complete observable state only that which current learning agents require
+
+        Args:
+            player (Int): The player in question
+
+        Returns:
+            State: The state that the player can see
+        """
         state = {}
 
         state["tableCards"] = self.tableCards
@@ -188,20 +216,31 @@ class manillenEnviroment:
 
         return state
 
-    def getObservationStateOfCurrentPlayer(self):
-        return self.getObservationState(self.playerTurn)
+    def renderCards(self,cards):
+        if cards == None:
+            return 'None | '
+        if type(cards) == list:
+            r = ""
+            for c in cards:
+                r += self.renderCards(c)
+            return r
+        return f"{cards['rank']}{self.SUITS[cards['suit']]} | "
                 
     def render(self):
         print("__________________________\n")
-        for player in range(4):
-            print(f'Player{player}: {len(self.playerCards[player])} cards.')
-        print(f'Table: {self.tableCards}')
-        print(f'WinningCard: {self.winningCard}')
+        print(len(self.playerCards[0]),len(self.playerCards[1]),len(self.playerCards[2]),len(self.playerCards[3]))
+        print(f'Table: {self.renderCards(self.tableCards)}')
+        print(f'WinningCard: {self.renderCards(self.winningCard)}')
         print(f'Troef: {self.troef}')
         print(f'SCORE: {self.team1points} | {self.team2points}')
 
 
-    def getRewards(self):
+    def getScores(self):
+        """The rewards of the current set. This function should only be called at the end of a game
+
+        Returns:
+            _type_: _description_
+        """
         if not self.done:
             return -1,-1
         else:
