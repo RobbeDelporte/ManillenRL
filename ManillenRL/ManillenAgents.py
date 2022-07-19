@@ -141,9 +141,9 @@ class LearningAgent(Agent):
 
 class SimpleLearningAgent(Agent):
     Qtable = np.zeros((4,4,2,32))
-    states = []
-    actions = []
-    nextStates = []
+    state = None
+    action = None
+    nextStates = None
     alpha = 0.5
     gamma = 0.8
 
@@ -164,23 +164,20 @@ class SimpleLearningAgent(Agent):
             if QActions[self.linAction(move)] > bestQValue:
                 bestQValue = QActions[self.linAction(move)]
                 bestAction = move
-        self.states.append(state)
-        self.actions.append(bestAction)
+        self.state = state
+        self.action = bestAction
         return bestAction
 
     def addNextState(self,state):
-        self.nextStates.append(state)
+        self.nextState = state
     
     def giveReward(self, reward):
-        for i in range(len(self.actions)):
-            action = self.actions[i]
-            state = self.states[i]
-            nextState = self.nextStates[i]
-            linAction = self.linAction(action)
-            self.getQActions(state)[linAction] = (1-self.alpha)*self.getQActions(state)[linAction] + self.alpha*(reward + self.gamma*np.max(self.getQActions(nextState)))
-        self.states = []
-        self.nextStates = []
-        self.actions = []
+
+        linAction = self.linAction(self.action)
+        self.getQActions(self.state)[linAction] = (1-self.alpha)*self.getQActions(self.state)[linAction] + self.alpha*(reward + self.gamma*np.max(self.getQActions(self.nextState)))
+        self.state = None
+        self.nextState = None
+        self.action = None
 
     def printStateShort(self,state):
         return f"troef: {state['troef']} cot: {state['cardsOnTable']} tw: {int(state['teamWinning'])}  "
