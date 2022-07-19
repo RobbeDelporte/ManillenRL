@@ -143,9 +143,9 @@ class LearningAgent(Agent):
         self.nextState = None
         self.action = None 
 
-    def saveModel(self,file):
-        np.save(file,self.Qtable)
+    def saveModel(self):
+        np.save("AgentV1.npy",self.Qtable)
 
-    def loadModel(self,file):
-        print("loading model from " + file)
-        self.Qtable = np.load(file)
+    def loadModel(self):
+        print("loading model from AgentV1.npy")
+        self.Qtable = np.load("AgentV1.npy")

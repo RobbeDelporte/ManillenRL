@@ -20,8 +20,8 @@ players = [team0,team1,team0,team1]
 
 me = manillenEnviroment()
 
-for i,player in enumerate(players):
-    player.loadModel(f"player{i}.npy")
+for player in players:
+    player.loadModel()
 
 for i in range(learningIterations):
     troef = i%4 
@@ -48,8 +48,8 @@ for i in range(learningIterations):
         print(f"learning: {i}/{learningIterations}")
 
 
-for i,player in enumerate(players):
-    player.saveModel(f"player{i}.npy")
+for player in players:
+    player.saveModel()
 
 print("LEARNING DONE!")
 
