@@ -21,8 +21,10 @@ class manillenEnviroment:
    
     def reset(self,seed,shift):
         """resets the enviroment. takes a seed and a shift that can be used to ensure fair games, without having to rely on big numbers
+
         Args:
             seed (Number): The seed used to shuffle the deck
+            
             shift (Int): the Shift determining the first player and which portion of the deck gets assigned to which player. eg: when shift = 1 the player n.1 will
             get the first turn and the same cards that player n.0 would have gotten when shift = 0
         """
@@ -73,7 +75,17 @@ class manillenEnviroment:
         """
         self.troef = troef
     
-    def step(self,card):        
+    def step(self,card):
+        """The step function of the enviroment. Imprtant to note the only player allowed to make a move is the current player AND the only allowed moves are legal ones.
+        This is not verified in the step function for performance reasons.
+
+        Args:
+            card (Card): The card/move of the current player
+
+        Returns:
+            (bool,int,int): Done, SetScore, WinningPlayer
+        """
+
         if self.cardsOnTable == 0:
             self.firstCard = card
             self.winningCard = card
@@ -186,7 +198,7 @@ class manillenEnviroment:
         return self.getLegalMoves(self.playerCards[player])
 
     def getObservationState(self,player):
-        """Gives the state that a player has access to, the observable state.
+        """Returns the state that a player has access to, the observable state.
         Impotant to note: This is NOT the complete observable state only that which current learning agents require
 
         Args:

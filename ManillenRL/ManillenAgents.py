@@ -61,7 +61,7 @@ class LastMoveAgent(Agent):
         return moves[-1]
     
 
-class FirstValueAgent(Agent):
+class HighestValueAgent(Agent):
     def getMove(self,moves,state):
         return max(moves,key=lambda x: x["value"])
 
