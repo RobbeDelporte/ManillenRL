@@ -55,7 +55,7 @@ class manillenEnviroment:
                     rank = value + 7
                 self.allCards.append({"suit": suit, "value": value, "rank": rank,"owner":-1})
 
-        random.seed(seed)
+        random.seed()
         random.shuffle(self.allCards)
 
         for i,card in enumerate(self.allCards):
@@ -68,11 +68,6 @@ class manillenEnviroment:
             self.playerCards[player] = sorted(self.playerCards[player],key=lambda x: 13*x["suit"]+x["value"])
 
     def setTroef(self,troef):
-        """sets the troef of the game. can be used in the future to include troef chosing algorithms.
-
-        Args:
-            troef (Int): 0,1,2 or 3 representing SPADES, DIAMONDS, CLUBS or HEARTS
-        """
         self.troef = troef
     
     def step(self,card):

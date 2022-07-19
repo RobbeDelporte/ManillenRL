@@ -3,20 +3,6 @@ import numpy as np
 
 class Agent:
 
-    actions = []
-    def __init__(self):
-        for suit in range(4):
-            for value in range(8):
-                if value == 7:
-                    rank = 10
-                elif value == 6:
-                    rank = 1
-                elif value > 2:
-                    rank = value + 8
-                else:
-                    rank = value + 7
-                self.actions.append({"suit": suit, "value": value, "rank": rank,"owner":-1})
-
     def getTroef(self,cards):
         suitScore = [0, 0, 0, 0]
         for card in cards:
@@ -35,7 +21,7 @@ class Agent:
 
         return np.argmax(suitScore)
 
-    def setNextState(self,state):
+    def addNextState(self,state):
         pass
 
     def giveReward(self,reward):
@@ -155,11 +141,12 @@ class LearningAgent(Agent):
 
 class SimpleLearningAgent(Agent):
     Qtable = np.zeros((4,4,2,32))
-    state = None
-    action = None
-    nextState = None
+    states = []
+    actions = []
+    nextStates = []
     alpha = 0.5
-    gamma = 0.5
+    gamma = 0.8
+
 
     def getQActions(self,state):
         return self.Qtable[state["troef"]][state["cardsOnTable"]][int(state["teamWinning"])]
@@ -171,25 +158,33 @@ class SimpleLearningAgent(Agent):
 
     def getMove(self,moves,state):
         QActions = self.getQActions(state)
-        bestQValue = -1*np.inf
+        bestQValue = -99999999
         bestAction = None
         for move in moves:
             if QActions[self.linAction(move)] > bestQValue:
                 bestQValue = QActions[self.linAction(move)]
                 bestAction = move
-        self.state = state
-        self.action = bestAction
+        self.states.append(state)
+        self.actions.append(bestAction)
         return bestAction
 
-    def setNextState(self,state):
-        self.nextState = state
+    def addNextState(self,state):
+        self.nextStates.append(state)
     
     def giveReward(self, reward):
-        linAction = self.linAction(self.action)
-        self.getQActions(self.state)[linAction] = (1-self.alpha)*self.getQActions(self.state)[linAction] + self.alpha*(reward + self.gamma*np.max(self.getQActions(self.nextState)))
-        self.state = None
-        self.nextState = None
-        self.action = None 
+        for i in range(len(self.actions)):
+            action = self.actions[i]
+            state = self.states[i]
+            nextState = self.nextStates[i]
+            linAction = self.linAction(action)
+            self.getQActions(state)[linAction] = (1-self.alpha)*self.getQActions(state)[linAction] + self.alpha*(reward + self.gamma*np.max(self.getQActions(nextState)))
+        self.states = []
+        self.nextStates = []
+        self.actions = []
+
+    def printStateShort(self,state):
+        return f"troef: {state['troef']} cot: {state['cardsOnTable']} tw: {int(state['teamWinning'])}  "
+        
 
     def saveModel(self):
         np.save("SimpleAgentV1.npy",self.Qtable)
@@ -197,3 +192,4 @@ class SimpleLearningAgent(Agent):
     def loadModel(self):
         print("loading model from SimpleAgentV1.npy")
         self.Qtable = np.load("SimpleAgentV1.npy")
+        print(self.Qtable.shape)

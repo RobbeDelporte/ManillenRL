@@ -1,9 +1,10 @@
+import re
 from ManillenEnv import manillenEnviroment
 from ManillenAgents import *
 
 
 
-learningIterations = 0
+learningIterations = 10000
 evaluationIterations = 10000
 
 p0 = SimpleLearningAgent()
@@ -13,23 +14,21 @@ p3 = SmartAgentV2()
 
 players = [p0,p1,p2,p3]
 
-# team0 = LearningAgent()
+# team0 = SimpleLearningAgent()
 # team1 = SmartAgentV2()
 
 # players = [team0,team1,team0,team1]
 
 me = manillenEnviroment()
 
-for player in players:
-    player.loadModel()
 
 for i in range(learningIterations):
     troef = i%4 
 
-    seed = random.random()
+    seed = i
     for shift in range(0,4):
         me.reset(seed,shift)
-        me.setTroef(troef)    
+        me.setTroef(troef)  
         done = False
         while not done:
             currentPlayer = me.playerTurn
@@ -37,7 +36,7 @@ for i in range(learningIterations):
             state = me.getObservationState(currentPlayer)
             move = players[currentPlayer].getMove(allMoves,state)
             done, reward, winner = me.step(move)
-            players[currentPlayer].setNextState(me.getObservationState(currentPlayer))
+            players[currentPlayer].addNextState(me.getObservationState(currentPlayer))
             if reward != None:
                 players[winner].giveReward(reward)
                 players[(winner+2)%4].giveReward(reward)
@@ -48,8 +47,8 @@ for i in range(learningIterations):
         print(f"learning: {i}/{learningIterations}")
 
 
-for player in players:
-    player.saveModel()
+# for player in players:
+#     player.saveModel()
 
 print("LEARNING DONE!")
 
@@ -60,8 +59,8 @@ team2CumulativePoints = 0
 for i in range(evaluationIterations):
     troef = i%4 
 
-    seed = random.random()
-    for shift in range(0,1):
+    seed = i
+    for shift in range(0,4):
         me.reset(seed,shift)
         me.setTroef(troef)
         done = False
