@@ -41,10 +41,13 @@ class Agent:
     def giveReward(self,reward):
         pass
 
-    def saveModel(self,file):
+    def learn(self,state,reward,nextState):
         pass
 
-    def loadModel(self,file):
+    def saveModel(self):
+        pass
+
+    def loadModel(self):
         pass
 
 class RandomAgent(Agent):
@@ -149,3 +152,48 @@ class LearningAgent(Agent):
     def loadModel(self):
         print("loading model from AgentV1.npy")
         self.Qtable = np.load("AgentV1.npy")
+
+class SimpleLearningAgent(Agent):
+    Qtable = np.zeros((4,4,2,32))
+    state = None
+    action = None
+    nextState = None
+    alpha = 0.5
+    gamma = 0.5
+
+    def getQActions(self,state):
+        return self.Qtable[state["troef"]][state["cardsOnTable"]][int(state["teamWinning"])]
+
+    def linAction(self,action):
+        if action == None:
+            return 32
+        return action["suit"]*8 + action["value"]
+
+    def getMove(self,moves,state):
+        QActions = self.getQActions(state)
+        bestQValue = -1*np.inf
+        bestAction = None
+        for move in moves:
+            if QActions[self.linAction(move)] > bestQValue:
+                bestQValue = QActions[self.linAction(move)]
+                bestAction = move
+        self.state = state
+        self.action = bestAction
+        return bestAction
+
+    def setNextState(self,state):
+        self.nextState = state
+    
+    def giveReward(self, reward):
+        linAction = self.linAction(self.action)
+        self.getQActions(self.state)[linAction] = (1-self.alpha)*self.getQActions(self.state)[linAction] + self.alpha*(reward + self.gamma*np.max(self.getQActions(self.nextState)))
+        self.state = None
+        self.nextState = None
+        self.action = None 
+
+    def saveModel(self):
+        np.save("SimpleAgentV1.npy",self.Qtable)
+
+    def loadModel(self):
+        print("loading model from SimpleAgentV1.npy")
+        self.Qtable = np.load("SimpleAgentV1.npy")

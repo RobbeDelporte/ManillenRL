@@ -198,8 +198,7 @@ class manillenEnviroment:
         return self.getLegalMoves(self.playerCards[player])
 
     def getObservationState(self,player):
-        """Returns the state that a player has access to, the observable state.
-        Impotant to note: This is NOT the complete observable state only that which current learning agents require
+        """Returns the state that a player has access to, the observable state. As well as some features
 
         Args:
             player (Int): The player in question

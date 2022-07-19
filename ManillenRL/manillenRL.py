@@ -6,17 +6,17 @@ from ManillenAgents import *
 learningIterations = 0
 evaluationIterations = 10000
 
-# p0 = SmartAgent()
-# p1 = SmartAgent()
-# p2 = SmartAgent()
-# p3 = SmartAgent()
+p0 = SimpleLearningAgent()
+p1 = SmartAgentV2()
+p2 = SimpleLearningAgent()
+p3 = SmartAgentV2()
 
-# players = [p0,p1,p2,p3]
+players = [p0,p1,p2,p3]
 
-team0 = SmartAgentV2()
-team1 = SmartAgentV2()
+# team0 = LearningAgent()
+# team1 = SmartAgentV2()
 
-players = [team0,team1,team0,team1]
+# players = [team0,team1,team0,team1]
 
 me = manillenEnviroment()
 
@@ -53,6 +53,7 @@ for player in players:
 
 print("LEARNING DONE!")
 
+
 team1CumulativePoints = 0
 team2CumulativePoints = 0
 
@@ -60,7 +61,7 @@ for i in range(evaluationIterations):
     troef = i%4 
 
     seed = random.random()
-    for shift in range(0,4):
+    for shift in range(0,1):
         me.reset(seed,shift)
         me.setTroef(troef)
         done = False
