@@ -3,12 +3,12 @@ from ManillenAgents import *
 
 
 
-learningIterations = 10000
-evaluationIterations = 10000
+learningIterations = 0
+evaluationIterations = 100
 
-p0 = LearningAgent()
+p0 = SimpleLearningAgent()
 p1 = SmartAgentV2()
-p2 = LearningAgent()
+p2 = SimpleLearningAgent()
 p3 = SmartAgentV2()
 
 players = [p0,p1,p2,p3]
@@ -38,7 +38,7 @@ for i in range(learningIterations):
             players[currentPlayer].addNextState(me.getObservationState(currentPlayer))
 
             if reward != None:
-                players[(winner)].giveReward(reward)
+                players[(winner+0)%4].giveReward(reward)
                 players[(winner+1)%4].giveReward(-1*reward)
                 players[(winner+2)%4].giveReward(reward)
                 players[(winner+3)%4].giveReward(-1*reward)

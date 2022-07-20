@@ -1,3 +1,4 @@
+from copy import deepcopy
 import random
 import numpy as np
 
@@ -100,7 +101,7 @@ class LearningAgent(Agent):
     action = None
     nextState = None
     alpha = 0.5
-    gamma = 0.5
+    gamma = 0.0
 
     def getQActions(self,state):
         return self.Qtable[self.linAction(state["winningCard"])][self.linAction(state["firstCard"])][state["setNumber"]][state["troef"]][state["cardsOnTable"]][int(state["teamWinning"])]
@@ -140,34 +141,34 @@ class LearningAgent(Agent):
         self.Qtable = np.load("AgentV1.npy")
 
 class SimpleLearningAgent(Agent):
-    Qtable = np.zeros((4,4,2,32))
+    Qtable = np.zeros((4,2,2,8))
     state = None
     action = None
     nextStates = None
     alpha = 1.0
     gamma = 0.0
 
-    # def __init__(self) -> None:
-    #     for troef in range(4):
-    #         for cardsOnTable in range(4):
-    #             for teamWinning in range(2):
-    #                 for card in range(32):
-    #                     cardValue = card%8
-    #                     cardSuit = card//8
-    #                     if cardsOnTable == 0:
-    #                         if cardValue == 7:
-    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 8
-    #                         else:
-    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 7 - cardValue
-    #                     else:
-    #                         if teamWinning:
-    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 8*(cardSuit != troef) + cardValue
-    #                         else:
-    #                             self.Qtable[troef][cardsOnTable][teamWinning][card] = 7 - cardValue
+    def __init__(self) -> None:
+       
+        for cardsOnTable in range(4):
+            for teamWinning in range(2):
+                for isCardSuitTroef in range(2):
+                    for cardValue in range(8):
+                        if cardsOnTable == 0:
+                            if cardValue == 7:
+                                self.Qtable[cardsOnTable][teamWinning][isCardSuitTroef][cardValue] = 8
+                            else:
+                                self.Qtable[cardsOnTable][teamWinning][isCardSuitTroef][cardValue] = 7 - cardValue
+                        else:
+                            if teamWinning:
+                                self.Qtable[cardsOnTable][teamWinning][0][cardValue] = 8+cardValue
+                                self.Qtable[cardsOnTable][teamWinning][1][cardValue] = cardValue
+                            else:
+                                self.Qtable[cardsOnTable][teamWinning][isCardSuitTroef][cardValue] = 7 - cardValue
 
 
-    def getQActions(self,state):
-        return self.Qtable[state["troef"]][state["cardsOnTable"]][int(state["teamWinning"])]
+    def getQValue(self,state,action):
+        return self.Qtable[state["cardsOnTable"]][int(state["teamWinning"])][int(state["troef"] == action["suit"])][action["value"]]
 
     def linAction(self,action):
         if action == None:
@@ -175,12 +176,11 @@ class SimpleLearningAgent(Agent):
         return action["suit"]*8 + action["value"]
 
     def getMove(self,moves,state):
-        QActions = self.getQActions(state)
         bestQValue = -99999999
         bestAction = None
         for move in moves:
-            if QActions[self.linAction(move)] > bestQValue:
-                bestQValue = QActions[self.linAction(move)]
+            if self.getQValue(state,move) > bestQValue:
+                bestQValue = self.getQValue(state,move)
                 bestAction = move
         self.state = state
         self.action = bestAction
@@ -206,4 +206,52 @@ class SimpleLearningAgent(Agent):
     def loadModel(self):
         print("loading model from SimpleAgentV1.npy")
         self.Qtable = np.load("SimpleAgentV1.npy")
+        print(self.Qtable.shape)
+
+class RandomSearchSimpleOptimalAgent(Agent):
+    bestQtable = np.zeros((4,2,2,8))
+    Qtable = np.zeros((4,2,2,8))
+    bestPerformance = 0
+  
+    def __init__(self) -> None:
+       
+        for cardsOnTable in range(4):
+            for teamWinning in range(2):
+                for isCardSuitTroef in range(2):
+                    for cardValue in range(8): 
+                        self.Qtable[cardsOnTable][teamWinning][isCardSuitTroef][cardValue] = random.randint(0,5)
+                            
+
+
+    def getQValue(self,state,action):
+        return self.Qtable[state["cardsOnTable"]][int(state["teamWinning"])][int(state["troef"] == action["suit"])][action["value"]]
+
+ 
+    def randomizeNewQTable(self):
+        for cardsOnTable in range(4):
+            for teamWinning in range(2):
+                for isCardSuitTroef in range(2):
+                    for cardValue in range(8): 
+                        self.Qtable[cardsOnTable][teamWinning][isCardSuitTroef][cardValue] = random.randint(0,5)
+
+    def getMove(self,moves,state):
+        bestQValue = -99999999
+        bestAction = None
+        for move in moves:
+            if self.getQValue(state,move) > bestQValue:
+                bestQValue = self.getQValue(state,move)
+                bestAction = move
+        return bestAction   
+
+    def giveScore(self,score):
+        if score > self.bestPerformance:
+            self.bestPerformance = score
+            self.bestQtable = deepcopy(self.Qtable)
+
+    def saveModel(self):
+        np.save("RandomSearchSimpleOptimalAgent.npy",self.bestQtable)
+
+    def loadModel(self):
+        print("loading model from RandomSearchSimpleOptimalAgent.npy")
+        self.Qtable = np.load("RandomSearchSimpleOptimalAgent.npy")
         print(self.Qtable.shape)
